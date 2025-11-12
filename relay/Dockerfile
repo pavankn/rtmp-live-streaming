@@ -7,12 +7,6 @@ RUN apt-get update && apt-get install -y iputils-ping dnsutils && rm -rf /var/li
 # Install Flask (and optionally requests if needed)
 RUN pip install --no-cache-dir flask fastapi uvicorn[standard] python-multipart requests httpx
 
-# Copy the script that generates nginx.conf
-#COPY generate_nginx_conf.py /data/generate_nginx_conf.py
-
-# Copy the Python relay script
-COPY stream_relay.py /data/stream_relay.py
-
 WORKDIR /app
 COPY on_publish.py /app/on_publish.py
 

@@ -15,9 +15,9 @@ RUN git clone https://github.com/sergey-dryabzhinsky/nginx-rtmp-module.git && \
 RUN apt-get update && apt-get install -y curl
 RUN apt-get update && apt-get install -y iputils-ping dnsutils && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /usr/local/nginx/html/stream-dashboard
-RUN mkdir -p /usr/local/nginx/html/stream-dashboard/data
-RUN mkdir -p /usr/local/nginx/html/stream-dashboard/assets
+# RUN mkdir -p /usr/local/nginx/html/stream-dashboard
+# RUN mkdir -p /usr/local/nginx/html/stream-dashboard/data
+# RUN mkdir -p /usr/local/nginx/html/stream-dashboard/assets
 
 COPY nginx.conf /usr/local/nginx/conf/nginx.conf
 

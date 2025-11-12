@@ -24,7 +24,8 @@ STREAMING_ENDPOINT = os.getenv("STREAMING_ENDPOINT", "live")
 RTMP_PORT = 1935
 NGINX_URL = f"rtmp://{NGINX_HOST}:{RTMP_PORT}/{STREAMING_ENDPOINT}"
 
-DIRECTUS_URL = "http://directus:8055/items/Giramelle_Streams?limit=-1"
+DIRECTUS_URL = os.getenv("DIRECTUS_URL", None)
+DIRECTUS_TOKEN = os.getenv("DIRECTUS_TOKEN", None)
 
 # -----------------------------------------------------------------------------
 # STATE
@@ -256,15 +257,28 @@ async def api_streams():
     return await load_streams_from_directus()
 
 async def load_streams_from_directus():
+    headers = {}   
+
+    if not DIRECTUS_URL:
+        raise RuntimeError("DIRECTUS_URL not set! Please export it or define in .env")
+
+    if DIRECTUS_TOKEN:
+        headers["Authorization"] = f"Bearer {DIRECTUS_TOKEN}"
+    else:
+        raise RuntimeError("DIRECTUS_TOKEN not set! Please export it or define in .env")
+
     async with httpx.AsyncClient() as c:
-        r = await c.get(DIRECTUS_URL)
+        r = await c.get(DIRECTUS_URL, headers=headers)
+        if r.status_code != 200:
+            print(f"❌ Directus returned {r.status_code}: {r.text}")
+            raise Exception("Failed to fetch Directus data")
+
         data = r.json()["data"]
 
+    # process as before
     streams = []
-
     for s in data:
         key = s["Stream_Key"]
-
         if key not in stream_status:
             stream_status[key] = {"filename": s["URL"], "status": "stopped"}
         else:
