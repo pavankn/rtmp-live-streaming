@@ -25,7 +25,7 @@ services:
       - RTMP_PORT=${RTMP_PORT}
       - RETRY_DELAY=${RETRY_DELAY}
       - DIRECTUS_URL=http://directus:8055/items/Giramelle_Streams?limit=-1
-      - DIRECTUS_TOKEN=QPB4OA9qojevE-MniwJqIqdxUHt0Uzo6
+      - DIRECTUS_TOKEN=RPmbLtvAAZRVm4c3-E-EWAOt_nrCKTvf
     ports:
       - "8081:8081"
     restart: unless-stopped
