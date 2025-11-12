@@ -1,0 +1,73 @@
+version: '3.9'
+
+services:
+  nginx_rtmp:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "${RTMP_PORT}:1935"
+      - "${HTTP_PORT}:8080"
+    depends_on:
+      - relay
+    restart: unless-stopped
+    networks:
+      - rtmp_net
+
+  relay:
+    build: ./relay
+    container_name: relay
+    environment:
+      - YOUTUBE_RTMP_URL=${YOUTUBE_RTMP_URL}
+      - NGINX_HOST=${NGINX_HOST}
+      - STREAMING_ENDPOINT=${STREAMING_ENDPOINT}
+      - STREAMS_CSV_PATH=${STREAMS_CSV_PATH}
+      - VIDEOS_DIR=${VIDEOS_DIR}
+      - RTMP_PORT=${RTMP_PORT}
+      - RETRY_DELAY=${RETRY_DELAY}
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./relay/streams.csv:/data/streams.csv:ro
+      - ./relay/videos:/videos:ro     # MP4 files
+      - ./relay/dashboard:/app/dashboard:ro
+    networks:
+      - rtmp_net
+
+  directus:
+    image: directus/directus:latest
+    container_name: directus
+    ports:
+      - "8055:8055"
+    env_file:
+      - .env
+    volumes:
+      - directus_database:/directus/database
+      - directus_uploads:/directus/uploads
+      - ./directus/extensions:/directus/extensions
+    depends_on:
+      - postgres
+    networks:
+      - rtmp_net
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: directus
+      POSTGRES_PASSWORD: directus
+      POSTGRES_DB: directus
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - rtmp_net
+
+networks:
+  rtmp_net:
+    driver: bridge
+
+volumes:
+  directus_uploads: # New named volume for uploads
+  directus_database: # Named volume for database (optional, but good practice)
+  pg_data:
